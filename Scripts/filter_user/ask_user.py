@@ -122,10 +122,33 @@ def ask_all(df: pd.DataFrame) -> pd.DataFrame:
     print(f"Vous avez choisi : Pays = {selected_region}, Secteur = {selected_sector}, Sous-secteur = {selected_subsector}")
     return df
 
-def ask_keywords() -> str:
+def ask_keywords(description: str) -> str:
     """
-    Demande à l'utilisateur des mots-clés pour enrichir la description de l'entreprise.
+    Demande à l'utilisateur des mots-clés et les ajoute à la description de l'entreprise avec un poids plus important.
+
+    Parameters:
+        description (str): Description actuelle de l'entreprise.
+
+    Returns:
+        str: Nouvelle description enrichie.
     """
-    print("Entrez, si vous le souhaitez, des mots-clés pour affiner la recherche : ")
-    return get_user_input("Mots clés: ")
+    print("Entrez des mots-clés (séparés par des virgules) pour affiner la recherche : ")
+    user_input = get_user_input("Mots-clés: ").strip()
+
+    if not user_input:  # Si aucun mot-clé saisi, retourner la description originale
+        print("Aucun mot-clé ajouté.")
+        return description
+
+    # Nettoyage : enlever espaces inutiles et convertir en minuscule
+    keywords = [kw.strip().lower() for kw in user_input.split(",") if kw.strip()]
+    formatted_keywords = ", ".join(keywords)
+
+    # Pondération des mots-clés en les répétant 3 fois
+    weighted_keywords = (formatted_keywords + " ") * 3
+
+    # Nouvelle description avec les mots-clés ajoutés en début de texte
+    enriched_description = f"{weighted_keywords.strip()}. {description}"
+
+    return enriched_description
+
 

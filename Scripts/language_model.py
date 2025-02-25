@@ -2,10 +2,17 @@ import torch
 from transformers import AutoModel, AutoTokenizer
 import numpy as np
 import pandas as pd
-from Scripts.language_model.PCA_functions import reduce_dimension_pca
+import sys
+import os
+
+# Ajouter 'Scripts' au sys.path pour éviter ModuleNotFoundError
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from PCA_functions import reduce_dimension_pca
 from tqdm import tqdm
 import torch.nn.functional as F
 from sklearn.metrics.pairwise import cosine_similarity
+
 
 def mean_pooling(model_output, attention_mask):
     token_embeddings = model_output.last_hidden_state
