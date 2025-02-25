@@ -2,7 +2,6 @@ import pandas as pd
 import sys
 import os
 
-# Ajouter 'Scripts' au sys.path pour éviter ModuleNotFoundError
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from language_model import pipeline_model

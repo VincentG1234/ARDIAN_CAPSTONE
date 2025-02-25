@@ -135,18 +135,15 @@ def ask_keywords(description: str) -> str:
     print("Entrez des mots-clés (séparés par des virgules) pour affiner la recherche : ")
     user_input = get_user_input("Mots-clés: ").strip()
 
-    if not user_input:  # Si aucun mot-clé saisi, retourner la description originale
+    if not user_input:  
         print("Aucun mot-clé ajouté.")
         return description
 
-    # Nettoyage : enlever espaces inutiles et convertir en minuscule
     keywords = [kw.strip().lower() for kw in user_input.split(",") if kw.strip()]
     formatted_keywords = ", ".join(keywords)
 
     # Pondération des mots-clés en les répétant 3 fois
     weighted_keywords = (formatted_keywords + " ") * 3
-
-    # Nouvelle description avec les mots-clés ajoutés en début de texte
     enriched_description = f"{weighted_keywords.strip()}. {description}"
 
     return enriched_description

@@ -5,7 +5,6 @@ import pandas as pd
 import sys
 import os
 
-# Ajouter 'Scripts' au sys.path pour éviter ModuleNotFoundError
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from PCA_functions import reduce_dimension_pca
