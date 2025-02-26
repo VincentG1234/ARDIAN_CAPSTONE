@@ -1,0 +1,23 @@
+# Fichiers de cache généraux
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Cache Node.js
+node_modules/
+npm-debug.log
+
+# Cache Jupyter Notebook
+.ipynb_checkpoints/
+
+# Cache VS Code
+.vscode/
+*.code-workspace
