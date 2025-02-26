@@ -78,7 +78,7 @@ def ask_company(df: pd.DataFrame) -> int:
         df.reset_index(drop=True, inplace=True)
     names = df["NAME"].unique()[:10]
 
-    print(f"Choisissez une entreprise parmi :\n{names}")
+    print(f"Choisissez une entreprise, voici quelques exemples :\n{names}")
 
     try:
         company = get_user_input("Votre choix : ")

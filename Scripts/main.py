@@ -4,7 +4,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
-from language_model import pipeline_model
+from language_model_folder.language_model import pipeline_model
 from filter_user.ask_user import ask_all, ask_company, ask_keywords
 
 def searchmodel_main(df, model=None, tokenizer=None, top_n=10 ) -> pd.DataFrame:

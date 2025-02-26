@@ -7,7 +7,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from PCA_functions import reduce_dimension_pca
+from language_model_folder.PCA_functions import reduce_dimension_pca
 from tqdm import tqdm
 import torch.nn.functional as F
 from sklearn.metrics.pairwise import cosine_similarity
