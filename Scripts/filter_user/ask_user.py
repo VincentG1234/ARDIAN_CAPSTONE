@@ -5,6 +5,7 @@ from fuzzywuzzy import process
 import sys
 import os
 import importlib
+import time
 
 #  Fonction universelle pour récupérer l'input utilisateur
 def get_user_input(message: str) -> str:
@@ -41,6 +42,8 @@ def ask_filter(df: pd.DataFrame, column_name: str, prompt: str) -> pd.DataFrame:
         )
 
     print(message)
+
+    time.sleep(1)
     
     try:
         user_input = get_user_input(prompt)
@@ -101,17 +104,17 @@ def ask_all(df: pd.DataFrame) -> pd.DataFrame:
     Demande tous les choix : pays, secteur, sous-secteur et entreprise.
     """
     df = ask_filter(df, "REGION", "Votre choix pour le pays : ")
-    if df is None:
+    if df is None or df.empty:
         print("Erreur lors du choix du pays.")
         return 
 
     df = ask_filter(df, "SECTOR", "Votre choix pour le secteur : ")
-    if df is None:
+    if df is None or df.empty:
         print("Erreur lors du choix du secteur.")
         return
 
     df = ask_filter(df, "SUBSECTOR", "Votre choix pour le sous-secteur : ")
-    if df is None:
+    if df is None or df.empty:
         print("Erreur lors du choix du sous-secteur.")
         return
 
