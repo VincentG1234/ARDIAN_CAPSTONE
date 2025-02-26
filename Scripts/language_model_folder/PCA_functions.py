@@ -37,7 +37,7 @@ def apply_pca(embedding_matrix, n_components):
     """
     pca = PCA(n_components=n_components)
     reduced_matrix = pca.fit_transform(embedding_matrix)
-    return reduced_matrix
+    return reduced_matrix, pca
 
 def reduce_dimension_pca(embedding_matrix, variance_threshold=0.85):
     """
@@ -58,7 +58,7 @@ def reduce_dimension_pca(embedding_matrix, variance_threshold=0.85):
     optimal_components = compute_optimal_pca_components(embedding_matrix, variance_threshold)
 
     # Étape 2 : Appliquer PCA avec le nombre optimal de dimensions
-    reduced_matrix = apply_pca(embedding_matrix, optimal_components)
+    reduced_matrix, pca = apply_pca(embedding_matrix, optimal_components)
 
-    return reduced_matrix
+    return reduced_matrix, pca
 

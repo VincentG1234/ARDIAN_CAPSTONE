@@ -21,3 +21,6 @@ npm-debug.log
 # Cache VS Code
 .vscode/
 *.code-workspace
+
+# Ignorer l'environnement virtuel Python
+venv/

@@ -6,6 +6,7 @@ import sys
 import os
 import importlib
 import time
+from Scripts.filter_user.filter import set_bounds
 
 #  Fonction universelle pour récupérer l'input utilisateur
 def get_user_input(message: str) -> str:
@@ -70,13 +71,12 @@ def ask_filter(df: pd.DataFrame, column_name: str, prompt: str) -> pd.DataFrame:
         return None
 
 
-def ask_company(df: pd.DataFrame) -> int:
+def ask_company(df: pd.DataFrame) -> pd.DataFrame:
     """
     Demande à l'utilisateur de choisir une entreprise après le filtrage.
     """
-    if df is not None:
-        df.reset_index(drop=True, inplace=True)
-    names = df["NAME"].unique()[:10]
+  
+    names = df["NAME"][:10]
 
     print(f"Choisissez une entreprise, voici quelques exemples :\n{names}")
 
@@ -85,14 +85,14 @@ def ask_company(df: pd.DataFrame) -> int:
 
         if company not in df["NAME"].unique():
             print("Entreprise non trouvée. Suggestions proches :")
-            suggestions = process.extract(company, df["NAME"].unique(), limit=3)
+            suggestions = process.extract(company, df["NAME"].unique(), limit=5)
             for suggestion in suggestions:
                 print(f"- {suggestion[0]} (score: {suggestion[1]})")
 
             print("Veuillez réessayer:")
             ask_company(df)
         else:
-            return df[df["NAME"] == company].index[0]
+            return df[df["NAME"] == company]
 
     except Exception as e:
         print(f"Erreur lors de la saisie : {e}")
@@ -151,4 +151,8 @@ def ask_keywords(description: str) -> str:
 
     return enriched_description
 
-
+def ask_whether_bound() -> pd.DataFrame:
+    
+    print("Voulez-vous appliquer un filtre sur les valeurs de la colonne FTE/REVENUE/EBITDA ?")
+    user_input = get_user_input("y/n: ")
+    return user_input
