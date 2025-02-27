@@ -9,14 +9,14 @@ def set_bounds(df: pd.DataFrame, row_buildup: pd.DataFrame, column_name: str = "
     if column_name not in df.columns:
         print(f"WARNING: La colonne {column_name} n'existe pas dans le DataFrame.")
         return None
-    elif row[column_name].isnull().values.any():
+    elif row_buildup[column_name].isnull().values.any():
         print(f"WARNING: La colonne {column_name} contient des valeurs nulles.")
         return None
     else:
         pass
 
-    value = row_buildup[column_name]
+    value = row_buildup[column_name].values[0]
     min_ = value * min_bound / 100
     max_ = value * max_bound / 100 
 
-    return df[df.between(min_, max_, inclusive=True)]
+    return df[df[column_name].between(min_, max_, inclusive="both")]

@@ -5,17 +5,22 @@ import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from Scripts.language_model_folder.language_model import pipeline_model
-from Scripts.filter_user.ask_user import ask_all, ask_company, ask_keywords, ask_whether_bound
+from Scripts.filter_user.ask_user import ask_all, ask_company, ask_keywords, ask_whether_bound, ask_filter
 from Scripts.filter_user.filter import set_bounds
 
 def searchmodel_main(df, model=None, tokenizer=None, top_n=10 ) -> pd.DataFrame:
     
+    # Filtration pour récupérer l'entreprise mère
+    df_buildup = df.copy()
+
+    print("Entrez le pays de l'entreprise mère. ex: FR, DE, UK, US... \n")
+    df_buildup = ask_filter(df_buildup, column_name="REGION", prompt="Entrez le Pays de l'entreprise mère: ")
+
     # Sélection de l'entreprise à partir de laquelle on souhaite rechercher des entreprises similaires
-    row_buildup_firm = ask_company(df)
-    print(row_buildup_firm)
+    row_buildup_firm = ask_company(df_buildup).iloc[0:1]
     
     # Suppression de la ligne de l'entreprise choisie
-    index = row_buildup_firm.index[0]
+    index = row_buildup_firm.index
     df = df.drop(index)
 
     # Filtrage des données en fonction des bornes minimales et maximales sur le FTE
@@ -30,7 +35,9 @@ def searchmodel_main(df, model=None, tokenizer=None, top_n=10 ) -> pd.DataFrame:
     # Filtrage des données selon les préférences de l'utilisateur
     df = ask_all(df)
 
+
     # Enrichissement de la description avec des mots-clés saisis par l'utilisateur
+    buildup_firm_description = row_buildup_firm["BUSINESS_DESCRIPTION"].values[0]
     buildup_firm_description = ask_keywords(buildup_firm_description)
 
     # reset index avant le pipeline
