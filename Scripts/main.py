@@ -21,7 +21,7 @@ def searchmodel_main(df, model=None, tokenizer=None, top_n=10 ) -> pd.DataFrame:
     row_buildup_firm = ask_company(df_buildup).iloc[0:1]
     
     # Remplacement du nom de l'entreprise par "The firm" dans la description
-    regex_replace_company_name(row_buildup_firm)
+    row_buildup_firm = regex_replace_company_name(row_buildup_firm)
 
     # Suppression de la ligne de l'entreprise choisie
     index = row_buildup_firm.index
@@ -40,7 +40,7 @@ def searchmodel_main(df, model=None, tokenizer=None, top_n=10 ) -> pd.DataFrame:
     df = ask_all(df)
 
     # Remplacement du nom de l'entreprise par "The firm" dans la description
-    regex_replace_company_name(df)
+    df = regex_replace_company_name(df)
 
     # Enrichissement de la description avec des mots-clés saisis par l'utilisateur
     buildup_firm_description = row_buildup_firm["BUSINESS_DESCRIPTION"].values[0]
