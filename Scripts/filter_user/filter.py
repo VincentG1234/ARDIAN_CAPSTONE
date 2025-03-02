@@ -21,9 +21,9 @@ def set_bounds(df: pd.DataFrame, row_buildup: pd.DataFrame, column_name: str = "
 
     return df[df[column_name].between(min_, max_, inclusive="both")]
 
-def regex_replace_company_name(df: pd.DataFrame) -> pd.DataFrame:
+def regex_replace_company_name_test(df:pd.DataFrame) -> pd.DataFrame:
     for index, row in df.iterrows():
         if pd.notna(row["NAME"]):
-            pattern = re.sub(r'\s+', r'\\s*', re.escape(str(row["NAME"])), flags=re.IGNORECASE)
+            pattern = re.escape(str(row["NAME"]))
             df.at[index, "BUSINESS_DESCRIPTION"] = re.sub(pattern, "The company", str(row["BUSINESS_DESCRIPTION"]), flags=re.IGNORECASE)
-        return df
+    return df
