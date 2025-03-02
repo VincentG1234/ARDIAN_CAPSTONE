@@ -1,6 +1,6 @@
 import pandas as pd 
 import numpy as np
-
+import re
 
 def set_bounds(df: pd.DataFrame, row_buildup: pd.DataFrame, column_name: str = "FTE", min_bound=20, max_bound = 50) -> pd.DataFrame:
     """
@@ -20,3 +20,9 @@ def set_bounds(df: pd.DataFrame, row_buildup: pd.DataFrame, column_name: str = "
     max_ = value * max_bound / 100 
 
     return df[df[column_name].between(min_, max_, inclusive="both")]
+
+def regex_replace_company_name(df):
+    for index, row in df.iterrows():
+        if pd.notna(row["NAME"]):
+            pattern = re.sub(r'\s+', r'\\s*', re.escape(str(row["NAME"])), flags=re.IGNORECASE)
+            df.at[index, "BUSINESS_DESCRIPTION"] = re.sub(pattern, "The firm", str(row["BUSINESS_DESCRIPTION"]), flags=re.IGNORECASE)
