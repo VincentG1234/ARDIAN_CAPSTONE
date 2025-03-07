@@ -125,17 +125,27 @@ def ask_all(df: pd.DataFrame) -> pd.DataFrame:
     print(f"Vous avez choisi : Pays = {selected_region}, Secteur = {selected_sector}, Sous-secteur = {selected_subsector}")
     return df
 
-def ask_keywords(description: str) -> str:
+def ask_keywords(description: str, firm_tags: list = None) -> str:
     """
-    Demande à l'utilisateur des mots-clés et les ajoute à la description de l'entreprise avec un poids plus important.
+    Demande à l'utilisateur s'il souhaite ajouter des mots-clés, 
+    et ajoute les mots-clés de l'entreprise mère avec un poids plus important.
 
     Parameters:
         description (str): Description actuelle de l'entreprise.
+        firm_tags (list): Liste des mots-clés de l'entreprise mère.
 
     Returns:
         str: Nouvelle description enrichie.
     """
-    print("Entrez des mots-clés (séparés par des virgules) pour affiner la recherche : ")
+    if firm_tags:
+        print(f"L'entreprise mère contient ces mots-clés : {', '.join(firm_tags)}")
+        use_firm_tags = get_user_input("Voulez-vous utiliser ces mots-clés ? (y/n) : ").strip().lower()
+        
+        if use_firm_tags == "y":
+            weighted_tags = (", ".join(firm_tags) + " ") * 3
+            return f"{weighted_tags.strip()}. {description}"
+
+    print("Entrez des mots-clés supplémentaires (séparés par des virgules) pour affiner la recherche : ")
     user_input = get_user_input("Mots-clés: ").strip()
 
     if not user_input:  
@@ -145,7 +155,6 @@ def ask_keywords(description: str) -> str:
     keywords = [kw.strip().lower() for kw in user_input.split(",") if kw.strip()]
     formatted_keywords = ", ".join(keywords)
 
-    # Pondération des mots-clés en les répétant 3 fois
     weighted_keywords = (formatted_keywords + " ") * 3
     enriched_description = f"{weighted_keywords.strip()}. {description}"
 
