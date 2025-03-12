@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import re
 
-def set_bounds(df: pd.DataFrame, row_buildup: pd.DataFrame, column_name: str = "FTE", min_bound=20, max_bound = 50) -> pd.DataFrame:
+def set_bounds(df: pd.DataFrame, row_buildup: pd.DataFrame, column_name: str = "FTE", min_bound=1, max_bound = 20) -> pd.DataFrame:
     """
     Filtrer les données en fonction des bornes minimales et maximales saisies par l'utilisateur.
     """
@@ -21,9 +21,10 @@ def set_bounds(df: pd.DataFrame, row_buildup: pd.DataFrame, column_name: str = "
 
     return df[df[column_name].between(min_, max_, inclusive="both")]
 
-def regex_replace_company_name(df:pd.DataFrame) -> pd.DataFrame:
+def regex_replace_company_name(df):
     for index, row in df.iterrows():
         if pd.notna(row["NAME"]):
             pattern = re.escape(str(row["NAME"]))
             df.at[index, "BUSINESS_DESCRIPTION"] = re.sub(pattern, "The company", str(row["BUSINESS_DESCRIPTION"]), flags=re.IGNORECASE)
     return df
+

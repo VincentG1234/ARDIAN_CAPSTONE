@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 import sys
 import os
-
+import seaborn as sns
+import matplotlib.pyplot as plt
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from language_model_folder.PCA_functions import reduce_dimension_pca
@@ -53,9 +54,47 @@ def get_top_n_similar_companies(df, reduced_embeddings, buildup_description_enco
 
     # Trouver les indices des 10 valeurs les plus élevées (hors soi-même)
     top_n_indices = np.argsort(similarities)[-top_n:][::-1]  # Tri décroissant
+    pd.set_option('display.max_rows', None)  
 
     print(f"Top {top_n} des entreprises les plus similaires:\n {df.loc[top_n_indices, 'NAME']}")
+    result_df = df.loc[top_n_indices, ['NAME', 'TAGS', 'BUSINESS_DESCRIPTION']].assign(Similarity=similarities[top_n_indices])
+    print(similarities[top_n_indices])
+    print(similarities.shape)
+    result_df['Similarity'] = similarities[top_n_indices]
+    return result_df
 
+def scoring_topn(firm, results, targets, top_n, data):
+    """Retourne le nombre de build ups présents dans les ntop résultats du modèle"""
+    top_index = np.argsort(results)[-top_n:][::-1]
+    top_results = data.loc[top_index, 'NAME'].tolist()
+    if firm in targets.keys():
+        prensent = 0
+        for target in targets[firm]:
+            if target in top_results:
+                prensent += 1
+    
+        print(f"Le score du modèle pour {firm} est de {prensent}/{len(targets[firm])}, pour le top {len(top_results)} résultats")
+    else:
+        print(f"l'entreprise {firm} n'est pas dans la liste des entreprises mères")
+
+def scoring_pos(firm, results, targets, data):
+    """"Retourne la position des builds ups dans la liste des résultats """
+    if firm in targets.keys():
+        present = []
+        for target in targets[firm]:
+            if target in results:
+                print(f"Le build up {target} est classé à la position {results.index(target)} sur {len(results)} entreprises")
+                present.append(results.index(target))
+            else:
+                print(f"Le build up {target} n'est pas présent dans les résultats pour les filtres appliqués")
+
+        #plots a bar plot of every similarity score, with the indexes of present in a different color
+        sns.set_theme(style="whitegrid")
+        sns.barplot(x=data.loc[results, 'NAME'].tolist(), y = results, palette="Blues") 
+        plt.xticks(rotation=90)
+        plt.show()
+
+    
 
 def pipeline_model(df, buildup_description, model, tokenizer, top_n=10):
     """Pipeline complet pour obtenir les 10 entreprises les plus similaires à une entreprise donnée."""
@@ -77,4 +116,6 @@ def pipeline_model(df, buildup_description, model, tokenizer, top_n=10):
     buildup_description_encoded_reduced = pca.transform(buildup_description_encoded)
 
     # Obtenir les 10 entreprises les plus similaires
-    get_top_n_similar_companies(df, reduced_embeddings, buildup_description_encoded_reduced, top_n=top_n)
+    df_result = get_top_n_similar_companies(df, reduced_embeddings, buildup_description_encoded_reduced, top_n=top_n)
+    
+    return df_result
