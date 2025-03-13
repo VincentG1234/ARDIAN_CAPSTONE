@@ -5,8 +5,8 @@ import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from Scripts.language_model_folder.language_model import pipeline_model
-from Scripts.filter_user.ask_user import ask_all, ask_company, ask_keywords, ask_whether_bound, ask_filter
-from Scripts.filter_user.filter import set_bounds, regex_replace_company_name
+from Scripts.filter_user.ask_user import ask_all, ask_company, ask_keywords, ask_filter
+from Scripts.filter_user.filter import regex_replace_company_name, regex_on_tags
 
 def searchmodel_main(df, model=None, tokenizer=None, top_n=10, alpha=0.8 ) -> pd.DataFrame:
     
@@ -25,17 +25,6 @@ def searchmodel_main(df, model=None, tokenizer=None, top_n=10, alpha=0.8 ) -> pd
     # Suppression de la ligne de l'entreprise choisie
     index = row_buildup_firm.index
     df = df.drop(index)
-
-    # Filtrage des données en fonction des bornes minimales et maximales sur le FTE
-    if ask_whether_bound().lower() == "y":
-        min_bound = int(input("Entrez la borne inférieure:"))
-        max_bound = int(input("Entrez la borne supérieure:"))
-        df = set_bounds(df, row_buildup_firm, column_name="FTE", min_bound=min_bound, max_bound=max_bound)
-    elif ask_whether_bound().lower() == "n":
-        pass
-    else:
-        print("Valeur non reconnue. Veuillez entrer 'y' ou 'n'.")
-        return None
     
 
     # Filtrage des données selon les préférences de l'utilisateur
@@ -55,7 +44,7 @@ def searchmodel_main(df, model=None, tokenizer=None, top_n=10, alpha=0.8 ) -> pd
     buildup_firm_description = row_buildup_firm["BUSINESS_DESCRIPTION"].values[0]
     buildup_firm_description = ask_keywords(buildup_firm_description, firm_tags_list)
 
-
+    
     # reset index avant le pipeline
     df.reset_index(drop=True, inplace=True)
     

@@ -1,3 +1,9 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
 def scoring_topn(firm, results, targets, top_n, data):
     """Retourne le nombre de build ups présents dans les ntop résultats du modèle"""
     top_index = np.argsort(results)[-top_n:][::-1]

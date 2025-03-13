@@ -6,7 +6,6 @@ import sys
 import os
 import importlib
 import time
-from Scripts.filter_user.filter import set_bounds
 
 #  Fonction universelle pour récupérer l'input utilisateur
 def get_user_input(message: str) -> str:
@@ -154,13 +153,8 @@ def ask_keywords(description: str, firm_tags: list = None) -> str:
     keywords = [kw.strip().lower() for kw in user_input.split(",") if kw.strip()]
     formatted_keywords = ", ".join(keywords)
 
-    weighted_keywords = (formatted_keywords + " ") * 3
+    weighted_keywords = (formatted_keywords + " ")
     enriched_description = f"{weighted_keywords.strip()}. {description}"
 
     return enriched_description
 
-def ask_whether_bound() -> pd.DataFrame:
-    
-    print("Voulez-vous appliquer un filtre sur les valeurs de la colonne FTE/REVENUE/EBITDA ?")
-    user_input = get_user_input("y/n: ")
-    return user_input

@@ -1,17 +1,19 @@
+import sys
+import os
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from tqdm import tqdm
 import torch
 from transformers import AutoModel, AutoTokenizer
 import numpy as np
 import pandas as pd
-import sys
-import os
-import seaborn as sns
-import matplotlib.pyplot as plt
+import torch.nn.functional as F
+from sklearn.metrics.pairwise import cosine_similarity
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from language_model_folder.PCA_functions import reduce_dimension_pca
-from tqdm import tqdm
-import torch.nn.functional as F
-from sklearn.metrics.pairwise import cosine_similarity
+from language_model_folder.boost_good_companies import index_companies_with_good_FTE, index_companies_with_good_ownership
 
 
 def mean_pooling(model_output, attention_mask):
@@ -64,7 +66,7 @@ def get_top_n_similar_companies(df, similarities, top_n=10):
 
     
 
-def pipeline_model(df, buildup_df, model, tokenizer, alpha=0.7, top_n=10):
+def pipeline_model(df, buildup_df, model, tokenizer, alpha=0.7, top_n=10, boost_factor=1.1):
     """Pipeline complet pour obtenir les 10 entreprises les plus similaires à une entreprise donnée."""
 
     # # Créer une copie temporaire du DataFrame pour éviter toute modification permanente
@@ -80,7 +82,7 @@ def pipeline_model(df, buildup_df, model, tokenizer, alpha=0.7, top_n=10):
     buildup_description_encoded = encode(buildup_df['BUSINESS_DESCRIPTION'].values[0], model, tokenizer)
 
     # Réduction de la dimension
-    reduced_embeddings_business_desc, pca_business_desc = reduce_dimension_pca(embedding_matrix_business_desc, variance_threshold=0.85)
+    reduced_embeddings_business_desc, pca_business_desc = reduce_dimension_pca(embedding_matrix_business_desc, variance_threshold=0.9)
     buildup_description_encoded_reduced = pca_business_desc.transform(buildup_description_encoded)
 
 
@@ -97,6 +99,14 @@ def pipeline_model(df, buildup_df, model, tokenizer, alpha=0.7, top_n=10):
 
     print("Calcul de la similarité combinée")
     similarities_combined = alpha * sim_vect_desc + (1 - alpha) * sim_vect_tags
+
+    # Obtenir les index des entreprises avec de bons FTE et ownership
+    good_fte_indices = index_companies_with_good_FTE(df, buildup_df)
+    good_ownership_indices = index_companies_with_good_ownership(df)
+
+    print("Boost des entreprises avec de bons FTE et ownership...")
+    similarities_combined[good_fte_indices] *= boost_factor
+    similarities_combined[good_ownership_indices] *= boost_factor
 
     # Obtenir les 10 entreprises les plus similaires
     df_result = get_top_n_similar_companies(df, similarities_combined, top_n=top_n)
