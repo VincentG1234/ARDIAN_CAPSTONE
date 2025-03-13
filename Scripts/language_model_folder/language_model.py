@@ -35,22 +35,21 @@ def encode(text, model, tokenizer):
 
 
 
-def get_embedding_matrix(df, model, tokenizer):
+def get_embedding_matrix(df, model, tokenizer, column_name="BUSINESS_DESCRIPTION"):
     """Retourne une matrice d'embedding BERT pour une liste de textes."""
     
     embedding_matrix = []
-    for text in tqdm(df["BUSINESS_DESCRIPTION"], desc="Processing embeddings"):
+    for text in tqdm(df[column_name], desc="Processing embeddings " + column_name):
         embedding_matrix.append(encode(text, model, tokenizer))
 
     return np.vstack(embedding_matrix)
 
+def get_similarity_vect(reduced_embedding, buildup_encoded_reduced):
+    """Retourne la similarité cosinus entre un embedding réduit et un autre."""
+    return cosine_similarity(buildup_encoded_reduced.reshape(1, -1), reduced_embedding)[0]
 
-
-def get_top_n_similar_companies(df, reduced_embeddings, buildup_description_encoded_reduced, top_n=10):
+def get_top_n_similar_companies(df, similarities, top_n=10):
     """Retourne les 10 entreprises les plus similaires à une entreprise donnée."""
-
-    # Calcul de la similarité cosinus entre l'embedding cible et tous les autres
-    similarities = cosine_similarity(buildup_description_encoded_reduced.reshape(1, -1), reduced_embeddings)[0]
 
     # Trouver les indices des 10 valeurs les plus élevées (hors soi-même)
     top_n_indices = np.argsort(similarities)[-top_n:][::-1]  # Tri décroissant
@@ -63,40 +62,9 @@ def get_top_n_similar_companies(df, reduced_embeddings, buildup_description_enco
     result_df['Similarity'] = similarities[top_n_indices]
     return result_df
 
-def scoring_topn(firm, results, targets, top_n, data):
-    """Retourne le nombre de build ups présents dans les ntop résultats du modèle"""
-    top_index = np.argsort(results)[-top_n:][::-1]
-    top_results = data.loc[top_index, 'NAME'].tolist()
-    if firm in targets.keys():
-        prensent = 0
-        for target in targets[firm]:
-            if target in top_results:
-                prensent += 1
-    
-        print(f"Le score du modèle pour {firm} est de {prensent}/{len(targets[firm])}, pour le top {len(top_results)} résultats")
-    else:
-        print(f"l'entreprise {firm} n'est pas dans la liste des entreprises mères")
-
-def scoring_pos(firm, results, targets, data):
-    """"Retourne la position des builds ups dans la liste des résultats """
-    if firm in targets.keys():
-        present = []
-        for target in targets[firm]:
-            if target in results:
-                print(f"Le build up {target} est classé à la position {results.index(target)} sur {len(results)} entreprises")
-                present.append(results.index(target))
-            else:
-                print(f"Le build up {target} n'est pas présent dans les résultats pour les filtres appliqués")
-
-        #plots a bar plot of every similarity score, with the indexes of present in a different color
-        sns.set_theme(style="whitegrid")
-        sns.barplot(x=data.loc[results, 'NAME'].tolist(), y = results, palette="Blues") 
-        plt.xticks(rotation=90)
-        plt.show()
-
     
 
-def pipeline_model(df, buildup_description, model, tokenizer, top_n=10):
+def pipeline_model(df, buildup_df, model, tokenizer, alpha=0.7, top_n=10):
     """Pipeline complet pour obtenir les 10 entreprises les plus similaires à une entreprise donnée."""
 
     # # Créer une copie temporaire du DataFrame pour éviter toute modification permanente
@@ -106,16 +74,32 @@ def pipeline_model(df, buildup_description, model, tokenizer, top_n=10):
     # if custom_description:
     #     temp_df.loc[index, "BUSINESS_DESCRIPTION"] = custom_description  # Remplacement temporaire
 
-    # Calcul de l'embedding BERT sur la copie
-    embedding_matrix = get_embedding_matrix(df, model, tokenizer)
-
-    buildup_description_encoded = encode(buildup_description, model, tokenizer)
+    ### Calcul de l'embedding sur la BUSINESS DESCRIPTION
+    print("Calcul de l'embedding sur la BUSINESS DESCRIPTION")
+    embedding_matrix_business_desc = get_embedding_matrix(df, model, tokenizer, column_name="BUSINESS_DESCRIPTION")
+    buildup_description_encoded = encode(buildup_df['BUSINESS_DESCRIPTION'].values[0], model, tokenizer)
 
     # Réduction de la dimension
-    reduced_embeddings, pca = reduce_dimension_pca(embedding_matrix, variance_threshold=0.85)
-    buildup_description_encoded_reduced = pca.transform(buildup_description_encoded)
+    reduced_embeddings_business_desc, pca_business_desc = reduce_dimension_pca(embedding_matrix_business_desc, variance_threshold=0.85)
+    buildup_description_encoded_reduced = pca_business_desc.transform(buildup_description_encoded)
+
+
+    ### Calcul de l'embedding sur les TAGS
+    print("Calcul de l'embedding sur les TAGS")
+    embedding_matrix_tags = get_embedding_matrix(df, model, tokenizer, column_name="TAGS")
+    buildup_tags_encoded = encode(buildup_df['TAGS'].values[0], model, tokenizer)
+    reduced_embeddings_tags, pca_tags = reduce_dimension_pca(embedding_matrix_tags, variance_threshold=0.95)
+    buildup_tags_encoded_reduced = pca_tags.transform(buildup_tags_encoded)
+
+    ### Calcul de la similarité
+    sim_vect_desc = get_similarity_vect(reduced_embeddings_business_desc, buildup_description_encoded_reduced)
+    sim_vect_tags = get_similarity_vect(reduced_embeddings_tags, buildup_tags_encoded_reduced)
+
+    print("Calcul de la similarité combinée")
+    similarities_combined = alpha * sim_vect_desc + (1 - alpha) * sim_vect_tags
 
     # Obtenir les 10 entreprises les plus similaires
-    df_result = get_top_n_similar_companies(df, reduced_embeddings, buildup_description_encoded_reduced, top_n=top_n)
+    df_result = get_top_n_similar_companies(df, similarities_combined, top_n=top_n)
     
     return df_result
+

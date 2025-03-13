@@ -6,9 +6,9 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from Scripts.language_model_folder.language_model import pipeline_model
 from Scripts.filter_user.ask_user import ask_all, ask_company, ask_keywords, ask_whether_bound, ask_filter
-from Scripts.filter_user.filter import set_bounds, regex_replace_company_name, adjust_business_description_with_tags
+from Scripts.filter_user.filter import set_bounds, regex_replace_company_name
 
-def searchmodel_main(df, model=None, tokenizer=None, top_n=10 ) -> pd.DataFrame:
+def searchmodel_main(df, model=None, tokenizer=None, top_n=10, alpha=0.8 ) -> pd.DataFrame:
     
     # Filtration pour récupérer l'entreprise mère
     df_buildup = df.copy()
@@ -60,7 +60,7 @@ def searchmodel_main(df, model=None, tokenizer=None, top_n=10 ) -> pd.DataFrame:
     df.reset_index(drop=True, inplace=True)
     
     # Appliquer le modèle BERT avec la nouvelle description enrichie
-    return pipeline_model(df, buildup_firm_description, model=model, tokenizer=tokenizer, top_n=top_n)
+    return pipeline_model(df, row_buildup_firm, model=model, tokenizer=tokenizer, alpha=alpha, top_n=top_n)
 
 
 

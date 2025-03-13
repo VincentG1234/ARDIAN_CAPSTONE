@@ -48,7 +48,6 @@ def ask_filter(df: pd.DataFrame, column_name: str, prompt: str) -> pd.DataFrame:
     
     try:
         user_input = get_user_input(prompt)
-
         if user_input.lower() == "all":
             return df
 
